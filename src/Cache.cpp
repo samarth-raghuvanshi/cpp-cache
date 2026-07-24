@@ -11,6 +11,15 @@ int Cache::resize(size_t newCapacity) {
     }
     return counter;
 }
+
+size_t Cache::getCapacity() const {
+    return capacity;
+}
+
+size_t Cache::getSize() const {
+    return lruList.size();
+}
+
 void Cache::set(const std::string &key, const std::string &value) {
     if (capacity==0)
         return;

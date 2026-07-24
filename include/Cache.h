@@ -17,6 +17,8 @@ class Cache {
         void erase(const std::string &key);
         bool exists(const std::string &key);
         int resize(size_t newCapacity);
+        size_t getCapacity() const;
+        size_t getSize() const;
     private:
         void touch(Entry &entry);
         void evict();

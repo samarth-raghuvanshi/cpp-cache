@@ -1,6 +1,7 @@
 #include "CommandParser.h"
 #include "Color.h"
 #include <iostream>
+#include <iomanip>
 
 CommandParser::CommandParser(Cache &cache) :cache(cache) {}
 
@@ -19,6 +20,13 @@ bool CommandParser::process(const std::string &line) {
         handleDelete(ss);
     else if (command == "RESIZE")
         handleResize(ss);
+    else if (command == "INFO") {
+        size_t entries = cache.getSize();
+        size_t cap = cache.getCapacity();
+        double usage = (static_cast<double> (entries)/cap)*100;
+        std::cout << color::YELLOW << "\n\tENTRIES: " << entries << "\n\tCAPACITY: " << cap << "\n\tUSAGE: " << std::fixed << std::setprecision(1) << usage << "%\n" << color::RESET << std::endl;
+        std::cout << std::defaultfloat;
+    }
     else if (command == "HELP")
         std::cout << color::YELLOW << HELP_MESSAGE << color::RESET << std::endl;
     else if (command == "EXIT")
