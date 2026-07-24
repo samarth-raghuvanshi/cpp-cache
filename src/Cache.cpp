@@ -68,5 +68,3 @@ void Cache::evict() {
     cacheMap.erase(lruList.back());
     lruList.pop_back();
 }
-
-        

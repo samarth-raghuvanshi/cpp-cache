@@ -20,5 +20,3 @@ int main() {
     std::cout << color::RESET;
     return 0;
 }
-
-
