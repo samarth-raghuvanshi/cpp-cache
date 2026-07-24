@@ -5,7 +5,7 @@ void Cache::set(const std::string &key, const std::string &value) {
 }
 std::optional<std::string> Cache::get(const std::string &key) const {
             const auto it = cacheMap.find(key);
-            if(it ==cacheMap.end())
+            if(it == cacheMap.end())
                 return std::nullopt;
             return it->second;
 }

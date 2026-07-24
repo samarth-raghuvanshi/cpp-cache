@@ -22,7 +22,7 @@ bool CommandParser::process(const std::string &line) {
     else if (command == "EXIT")
         return false;
     else 
-        std::cout << color::RED << "\t" << command << " is not a recognised command.\n\tType HELP to view command usage." << color::RESET << std::endl;
+        std::cout << color::RED << "\t\"" << command << "\" is not a recognised command.\n\tType HELP to view command usage." << color::RESET << std::endl;
     return true;
 }
 
@@ -46,7 +46,7 @@ void CommandParser::handleGet(std::stringstream &ss) {
     if (s.has_value())
         std::cout << color::GREEN << "\t" << s.value() << color::RESET<< std::endl;
     else
-        std::cout << color::RED << "\tKey not found" << color::RESET << std::endl;
+        std::cout << color::RED << "\tKEY: \""<< key << "\" not found" << color::RESET << std::endl;
 }
 
 void CommandParser::handleExists(std::stringstream &ss) {
@@ -56,9 +56,9 @@ void CommandParser::handleExists(std::stringstream &ss) {
         return;
     }
     if (cache.exists(key))
-        std::cout << color::GREEN << "\tKEY: " << key << " exists" << color::RESET << std::endl;
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" exists" << color::RESET << std::endl;
     else
-        std::cout << color::GREEN << "\tKEY: " << key << " does not exist" << color::RESET << std::endl;
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" does not exist" << color::RESET << std::endl;
 }
 
 void CommandParser::handleDelete(std::stringstream &ss) {

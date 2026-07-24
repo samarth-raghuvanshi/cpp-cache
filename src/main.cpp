@@ -8,7 +8,7 @@ int main() {
     Cache cache;
     CommandParser cmdParse(cache);
     std::string line;
-    std::cout << color::BLUE << "C++ MEMORY CACHE\n";
+    std::cout << color::CYAN << "C++ MEMORY CACHE\n";
     std::cout << "Type HELP to view command usage.\n" << color::RESET << std::endl;
     while (true) {
         std::cout << color::BLUE << ">";
