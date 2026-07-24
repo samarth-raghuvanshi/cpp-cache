@@ -20,7 +20,14 @@ bool CommandParser::process(const std::string &line) {
         handleDelete(ss);
     else if (command == "RESIZE")
         handleResize(ss);
+    else if (command == "EXPIRE")
+        handleExpire(ss);
+    else if (command == "PERSIST")
+        handlePersist(ss);
+    else if (command == "TTL")
+        handleTTL(ss);
     else if (command == "INFO") {
+        cache.cleanupExpired();
         size_t entries = cache.getSize();
         size_t cap = cache.getCapacity();
         double usage = (static_cast<double> (entries)/cap)*100;
@@ -36,28 +43,27 @@ bool CommandParser::process(const std::string &line) {
     return true;
 }
 
-void CommandParser::handleResize(std::stringstream &ss) {
-    long long newCapacity;
-    std::string extra;
-    if ((!(ss >> newCapacity)) || (ss >> extra) ) {
-        std::cout << color::RED << "\tUsage: RESIZE <integer_value>" << color::RESET << std::endl;
-        return;
-    }
-    if (newCapacity <= 0) {
-        std::cout << color::RED << "\tINVALID: Capacity should be atleast 1" << color::RESET << std::endl;
-        return;
-    }
-    int changed = cache.resize(static_cast<size_t>(newCapacity));
-    std::cout << color::GREEN << "\tCapacity changed to " << newCapacity << ".\n\tEvicted " << changed << " entries." << color::RESET << std::endl;
-}
-
 void CommandParser::handleSet(std::stringstream &ss) {
-    std:: string key, value, extra;
-    if ((!(ss >> key >> value)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: SET <key> <value>" << color::RESET << std::endl;
+    std:: string key, value, command, extra;
+    int ttl;
+    if ((!(ss >> key >> value))) {
+        std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
         return;
     }
-    cache.set(key, value);
+    if (!(ss >> command)) {
+        cache.set(key, value);
+    }
+    else {
+        if (command != "TTL") {
+            std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
+            return;
+        }
+        if (!(ss >> ttl) || ttl<=0 || (ss >> extra)) {
+            std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
+            return;
+        }
+        cache.set(key, value, ttl);
+    }
     std::cout << color::GREEN << "\tStored successfully." << color::RESET << std::endl;
 }
 
@@ -92,6 +98,63 @@ void CommandParser::handleDelete(std::stringstream &ss) {
         std::cout << color::RED << "\tUsage: DELETE <key>" << color::RESET << std::endl;
         return;
     }
-    cache.erase(key);
-    std::cout << color::GREEN << "\tDeleted successfully." << color::RESET << std::endl;
+    if(cache.eraseKey(key))
+        std::cout << color::GREEN << "\tDeleted successfully." << color::RESET << std::endl;
+    else
+        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+}
+
+void CommandParser::handleResize(std::stringstream &ss) {
+    long long newCapacity;
+    std::string extra;
+    if ((!(ss >> newCapacity)) || (ss >> extra) ) {
+        std::cout << color::RED << "\tUsage: RESIZE <integer_value>" << color::RESET << std::endl;
+        return;
+    }
+    if (newCapacity <= 0) {
+        std::cout << color::RED << "\tINVALID: Capacity should be atleast 1" << color::RESET << std::endl;
+        return;
+    }
+    int changed = cache.resize(static_cast<size_t>(newCapacity));
+    std::cout << color::GREEN << "\tCapacity changed to " << newCapacity << ".\n\tEvicted " << changed << " entries." << color::RESET << std::endl;
+}
+
+void CommandParser::handleExpire(std::stringstream &ss) {
+    std::string key, extra;
+    int ttl;
+    if ((!(ss >> key >> ttl)) || ttl<=0 || (ss >> extra)) {
+        std::cout << color::RED << "\tUsage: EXPIRE <key> <seconds>" << color::RESET << std::endl;
+        return;
+    }
+    if(cache.setExpiry(key, ttl))
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" set to expire in " << ttl << " seconds." << color::RESET << std::endl;
+    else
+        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+}
+
+void CommandParser::handlePersist(std::stringstream &ss) {
+    std::string key, extra;
+    if ((!(ss >> key)) || (ss >> extra)) {
+        std::cout << color::RED << "\tUsage: PERSIST <key>" << color::RESET << std::endl;
+        return;
+    }
+    if(cache.persist(key))
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" expiry removed." << color::RESET << std::endl;
+    else
+        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+}
+
+void CommandParser::handleTTL(std::stringstream &ss) {
+    std::string key, extra;
+    if ((!(ss >> key)) || (ss >> extra)) {
+        std::cout << color::RED << "\tUsage: TTL <key>" << color::RESET << std::endl;
+        return;
+    }
+    int ttl = cache.getTTL(key);
+    if (ttl == -2)
+        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+    else if (ttl == -1)
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" has no expiry." << color::RESET << std::endl;
+    else
+        std::cout << color::GREEN << "\tKEY: \"" << key << "\" expires in " << ttl << " seconds." << color::RESET << std::endl;
 }
