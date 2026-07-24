@@ -1,14 +1,23 @@
 #include <iostream>
+#include <string>
 #include "Cache.h"
+#include "CommandParser.h"
+#include "Color.h"
 
 int main() {
-    Cache ch;
-    ch.set("name", "cppcache");
-    auto s = ch.get("name");
-    if (s.has_value())
-        std::cout << s.value() << std::endl;
-    else
-        std::cout << "Key not found" << std::endl;
+    Cache cache;
+    CommandParser cmdParse(cache);
+    std::string line;
+    std::cout << color::BLUE << "C++ MEMORY CACHE\n";
+    std::cout << "Type HELP to view command usage.\n" << color::RESET << std::endl;
+    while (true) {
+        std::cout << color::BLUE << ">";
+        if(!(std::getline(std::cin, line)))
+            break;
+        if(!cmdParse.process(line))
+            break;
+    }
+    std::cout << color::RESET;
     return 0;
 }
 

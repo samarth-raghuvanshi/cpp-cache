@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(cpp-cache
     src/main.cpp
     src/Cache.cpp
+    src/CommandParser.cpp
 )
 
 target_include_directories(cpp-cache PRIVATE include)
