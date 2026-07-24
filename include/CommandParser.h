@@ -24,4 +24,5 @@ class CommandParser {
         void handleGet(std::stringstream &ss);
         void handleExists(std::stringstream &ss);
         void handleDelete(std::stringstream &ss);
+        void handleResize(std::stringstream &ss);
 };

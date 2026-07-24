@@ -17,6 +17,8 @@ bool CommandParser::process(const std::string &line) {
         handleExists(ss);
     else if (command == "DELETE")
         handleDelete(ss);
+    else if (command == "RESIZE")
+        handleResize(ss);
     else if (command == "HELP")
         std::cout << color::YELLOW << HELP_MESSAGE << color::RESET << std::endl;
     else if (command == "EXIT")
@@ -26,9 +28,24 @@ bool CommandParser::process(const std::string &line) {
     return true;
 }
 
+void CommandParser::handleResize(std::stringstream &ss) {
+    long long newCapacity;
+    std::string extra;
+    if ((!(ss >> newCapacity)) || (ss >> extra) ) {
+        std::cout << color::RED << "\tUsage: RESIZE <integer_value>" << color::RESET << std::endl;
+        return;
+    }
+    if (newCapacity <= 0) {
+        std::cout << color::RED << "\tINVALID: Capacity should be atleast 1" << color::RESET << std::endl;
+        return;
+    }
+    int changed = cache.resize(static_cast<size_t>(newCapacity));
+    std::cout << color::GREEN << "\tCapacity changed to " << newCapacity << ".\n\tEvicted " << changed << " entries." << color::RESET << std::endl;
+}
+
 void CommandParser::handleSet(std::stringstream &ss) {
-    std:: string key, value;
-    if (!(ss >> key >> value)) {
+    std:: string key, value, extra;
+    if ((!(ss >> key >> value)) || (ss >> extra)) {
         std::cout << color::RED << "\tUsage: SET <key> <value>" << color::RESET << std::endl;
         return;
     }
@@ -37,8 +54,8 @@ void CommandParser::handleSet(std::stringstream &ss) {
 }
 
 void CommandParser::handleGet(std::stringstream &ss) {
-    std::string key;
-    if (!(ss >> key)) {
+    std::string key, extra;
+    if ((!(ss >> key)) || (ss >> extra)) {
         std::cout << color::RED << "\tUsage: GET <key>" << color::RESET << std::endl;
         return;
     }
@@ -50,8 +67,8 @@ void CommandParser::handleGet(std::stringstream &ss) {
 }
 
 void CommandParser::handleExists(std::stringstream &ss) {
-    std::string key;
-    if(!(ss >> key)) {
+    std::string key, extra;
+    if ((!(ss >> key)) || (ss >> extra)) {
         std::cout << color::RED << "\tUsage: EXISTS <key>" << color::RESET << std::endl;
         return;
     }
@@ -62,8 +79,8 @@ void CommandParser::handleExists(std::stringstream &ss) {
 }
 
 void CommandParser::handleDelete(std::stringstream &ss) {
-    std::string key;
-    if(!(ss >> key)) {
+    std::string key, extra;
+    if ((!(ss >> key)) || (ss >> extra)) {
         std::cout << color::RED << "\tUsage: DELETE <key>" << color::RESET << std::endl;
         return;
     }
