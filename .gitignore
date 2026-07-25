@@ -2,7 +2,7 @@
 build/
 
 # database
-data/
+data/*.db
 # CMake
 CMakeCache.txt
 CMakeFiles/
