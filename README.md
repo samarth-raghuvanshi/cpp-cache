@@ -1,6 +1,6 @@
 # cpp-cache
 
-A lightweight, in-memory key-value cache written in modern C++17. It features an interactive command-line interface, LRU eviction, optional per-key TTL expiration, and dynamic capacity resizing.
+A lightweight, in-memory key-value cache written in modern C++17. It features an interactive command-line interface, LRU eviction, optional per-key TTL expiration, dynamic capacity resizing, and persistent storage.
 
 ## Features
 
@@ -8,6 +8,7 @@ A lightweight, in-memory key-value cache written in modern C++17. It features an
 - **LRU eviction** when the cache reaches its capacity
 - **Optional TTL** on keys with `SET ... TTL <seconds>`, `EXPIRE`, `PERSIST`, and `TTL` commands
 - **Dynamic resizing** with automatic eviction of least-recently-used entries
+- **Persistent storage** via `SAVE` and `LOAD` commands (stored in `data/`)
 - **Interactive CLI** with colorized output and built-in help
 
 ## Building
@@ -40,6 +41,9 @@ cmake --build build
 | `EXPIRE <key> <seconds>` | Set or update TTL for an existing key |
 | `PERSIST <key>` | Remove expiration from an existing key |
 | `TTL <key>` | Show remaining seconds until expiration |
+| `SAVE <filename>` | Save cache entries to `data/<filename>.db` |
+| `LOAD <filename>` | Load cache entries from `data/<filename>.db` |
+| `CLEAR` | Remove all entries from the cache |
 | `INFO` | Print current capacity, entry count, and usage |
 | `HELP` | Display command usage |
 | `EXIT` | Quit the program |
@@ -51,11 +55,14 @@ cpp-cache/
 ├── CMakeLists.txt
 ├── include/
 │   ├── Cache.h
+│   ├── CacheSerializer.h
 │   ├── CommandParser.h
 │   └── Color.h
 ├── src/
 │   ├── main.cpp
 │   ├── Cache.cpp
+│   ├── CacheSerializer.cpp
 │   └── CommandParser.cpp
+├── data/
 └── build/
 ```
