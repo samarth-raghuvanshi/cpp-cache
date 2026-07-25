@@ -128,8 +128,7 @@ int Cache::getTTL(const std::string &key) {
     if (!it->second.hasExpiry) {
         return -1;
     }
-    auto remaining = std::chrono::duration_cast<std::chrono::seconds>(it->second.expiry - std::chrono::steady_clock::now()).count();
-    return static_cast<int>(std::max(0LL, remaining));
+    return toSeconds(it->second);
 }
 
 void Cache::cleanupExpired() {
@@ -141,6 +140,18 @@ void Cache::cleanupExpired() {
         else
             ++it;
     }
+}
+
+std::vector<dbEntry> Cache::getEntries() const{
+    std::vector<dbEntry> entries;
+    entries.reserve(cacheMap.size());
+    for(const auto&[key, entry]:cacheMap) {
+        if(isExpired(entry))
+            continue;
+        int ttl = (entry.hasExpiry)? toSeconds(entry):-1;
+        entries.push_back(dbEntry{key, entry.value, ttl});
+    }
+    return entries;
 }
 
 size_t Cache::getCapacity() const {
@@ -169,4 +180,14 @@ void Cache::evict() {
 void Cache::erase(std::unordered_map<std::string, Entry>::iterator it) {
     lruList.erase(it->second.itr);
     cacheMap.erase(it);
+}
+
+void Cache::clear() {
+    cacheMap.clear();
+    lruList.clear();
+}
+
+int Cache::toSeconds(const Entry &entry) const {
+    auto remaining = std::chrono::duration_cast<std::chrono::seconds>(entry.expiry - std::chrono::steady_clock::now()).count();
+    return static_cast<int>(std::max(0LL, remaining));
 }

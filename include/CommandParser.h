@@ -16,6 +16,9 @@ class CommandParser {
         "\tEXPIRE <key> <seconds>                   Set time-to-live for existing key\n"
         "\tPERSIST <key>                            Remove TTL expiration for existing key\n"
         "\tTTL <key>                                Retrieve time until expiration for existing key\n"
+        "\tSAVE <filename>                          Save cache entries to ./data/filename(.db)\n"
+        "\tLOAD <filename>                          Load cache entries from ./data/filename(.db)\n"
+        "\tCLEAR                                    Clear the cache\n"
         "\tINFO                                     Print current capacity and number of entries\n"
         "\tHELP                                     Display list of commands\n"
         "\tEXIT                                     Exit the program\n";
@@ -33,4 +36,7 @@ class CommandParser {
         void handleExpire(std::stringstream &ss);
         void handlePersist(std::stringstream &ss);
         void handleTTL(std::stringstream &ss);
+        void handleSave(std::stringstream &ss);
+        void handleLoad(std::stringstream &ss);
+        void handleClear(std::stringstream &ss);
 };

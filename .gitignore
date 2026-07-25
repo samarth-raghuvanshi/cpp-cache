@@ -1,6 +1,8 @@
 # Build output
 build/
 
+# database
+data/
 # CMake
 CMakeCache.txt
 CMakeFiles/

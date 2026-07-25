@@ -4,12 +4,19 @@
 #include <optional>
 #include <list>
 #include <chrono>
+#include <vector>
 
 struct Entry {
     std::string value;
     std::list<std::string>::iterator itr;
     bool hasExpiry = false;
     std::chrono::steady_clock::time_point expiry;
+};
+
+struct dbEntry {
+    std::string key;
+    std::string value;
+    int ttl;
 };
 
 class Cache {
@@ -27,11 +34,14 @@ class Cache {
         size_t getCapacity() const;
         size_t getSize() const;
         void cleanupExpired();
+        void clear();
+        std::vector<dbEntry> getEntries() const;
     private:
         bool isExpired(const Entry& entry) const;
         void touch(Entry &entry);
         void evict();
         void erase(std::unordered_map<std::string, Entry>::iterator it);
+        int toSeconds(const Entry &entry) const;
         size_t capacity;
         std::list<std::string> lruList;
         std::unordered_map<std::string, Entry> cacheMap;

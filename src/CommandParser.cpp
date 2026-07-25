@@ -1,5 +1,6 @@
 #include "CommandParser.h"
 #include "Color.h"
+#include "CacheSerializer.h"
 #include <iostream>
 #include <iomanip>
 
@@ -26,6 +27,12 @@ bool CommandParser::process(const std::string &line) {
         handlePersist(ss);
     else if (command == "TTL")
         handleTTL(ss);
+    else if (command == "SAVE")
+        handleSave(ss);
+    else if (command == "LOAD")
+        handleLoad(ss);
+    else if (command == "CLEAR")
+        handleClear(ss);
     else if (command == "INFO") {
         cache.cleanupExpired();
         size_t entries = cache.getSize();
@@ -157,4 +164,38 @@ void CommandParser::handleTTL(std::stringstream &ss) {
         std::cout << color::GREEN << "\tKEY: \"" << key << "\" has no expiry." << color::RESET << std::endl;
     else
         std::cout << color::GREEN << "\tKEY: \"" << key << "\" expires in " << ttl << " seconds." << color::RESET << std::endl;
+}
+
+void CommandParser::handleSave(std::stringstream &ss) {
+    std::string filename, extra;
+    if ((!(ss >> filename)) || (ss >> extra)) {
+        std::cout << color::RED << "\tUsage: SAVE <filename>" << color::RESET << std::endl;
+        return;
+    }
+    if (CacheSerializer::save(cache, filename)) 
+        std::cout << color::GREEN << "\tCache stored to ../data/" << filename << color::RESET << std::endl;
+    else 
+        std::cout << color::RED << "\tERROR: Could not open " << filename << "." << color::RESET << std::endl;
+}
+
+void CommandParser::handleLoad(std::stringstream &ss) {
+    std::string filename, extra;
+    if ((!(ss >> filename)) || (ss >> extra)) {
+        std::cout << color::RED << "\tUsage: LOAD <filename>" << color::RESET << std::endl;
+        return;
+    }
+    if (CacheSerializer::load(cache, filename)) 
+        std::cout << color::GREEN << "\tCache loaded from ../data/" << filename << color::RESET << std::endl;
+    else 
+        std::cout << color::RED << "\tERROR: Could not open " << filename << "." << color::RESET << std::endl;
+}
+
+void CommandParser::handleClear(std::stringstream &ss) {
+    std::string extra;
+    if (ss >> extra) {
+        std::cout << color::RED << "\tUsage: LOAD <filename>" << color::RESET << std::endl;
+        return;
+    }
+    cache.clear();
+        std::cout << color::GREEN << "\tCache cleared." << color::RESET << std::endl;
 }

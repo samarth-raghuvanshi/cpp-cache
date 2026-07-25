@@ -9,6 +9,7 @@ add_executable(cpp-cache
     src/main.cpp
     src/Cache.cpp
     src/CommandParser.cpp
+    src/CacheSerializer.cpp
 )
 
 target_include_directories(cpp-cache PRIVATE include)
