@@ -2,7 +2,9 @@
 build/
 
 # database
-data/*.db
+data/*
+!data/.gitkeep
+
 # CMake
 CMakeCache.txt
 CMakeFiles/
