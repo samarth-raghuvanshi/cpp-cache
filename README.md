@@ -1,6 +1,6 @@
 # cpp-cache
 
-A lightweight, in-memory key-value cache written in modern C++17. It features an interactive command-line interface, LRU eviction, optional per-key TTL expiration, dynamic capacity resizing, and persistent storage.
+A lightweight, in-memory key-value cache written in modern C++17. It features an interactive command-line interface, TCP client/server mode, LRU eviction, optional per-key TTL expiration, dynamic capacity resizing, and persistent storage.
 
 ## Features
 
@@ -9,11 +9,12 @@ A lightweight, in-memory key-value cache written in modern C++17. It features an
 - **Optional TTL** on keys with `SET ... TTL <seconds>`, `EXPIRE`, `PERSIST`, and `TTL` commands
 - **Dynamic resizing** with automatic eviction of least-recently-used entries
 - **Persistent storage** via `SAVE` and `LOAD` commands (stored in `data/`)
-- **Interactive CLI** with colorized output and built-in help
+- **Interactive CLI** with built-in help
+- **TCP client/server mode** for remote cache access over the network
 
 ## Building
 
-This project uses CMake and requires a C++17-compatible compiler.
+This project uses CMake and requires a C++17-compatible compiler. It builds three executables: `cli`, `server`, and `client`.
 
 ```bash
 # Configure
@@ -25,9 +26,27 @@ cmake --build build
 
 ## Running
 
+### Interactive CLI
+
 ```bash
-./build/cpp-cache
+./build/cli
 ```
+
+### Server
+
+```bash
+./build/server
+```
+
+The server listens on port `9000` by default.
+
+### Client
+
+```bash
+./build/client
+```
+
+Enter the server address and port when prompted. Leave the address blank to use `127.0.0.1`.
 
 ## Commands
 
@@ -56,13 +75,19 @@ cpp-cache/
 ├── include/
 │   ├── Cache.h
 │   ├── CacheSerializer.h
+│   ├── Client.h
 │   ├── CommandParser.h
-│   └── Color.h
+│   └── Server.h
 ├── src/
-│   ├── main.cpp
 │   ├── Cache.cpp
 │   ├── CacheSerializer.cpp
-│   └── CommandParser.cpp
+│   ├── Client.cpp
+│   ├── CommandParser.cpp
+│   └── Server.cpp
+├── apps/
+│   ├── cli_main.cpp
+│   ├── client_main.cpp
+│   └── server_main.cpp
 ├── data/
 └── build/
 ```
