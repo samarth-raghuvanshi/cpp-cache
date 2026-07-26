@@ -42,3 +42,12 @@ target_link_libraries(client
         cache_core
         ws2_32
 )
+
+add_executable(benchmark
+    apps/benchmark_main.cpp
+)
+
+target_link_libraries(benchmark
+    PRIVATE
+        cache_core
+)

@@ -14,7 +14,7 @@ A lightweight, in-memory key-value cache written in modern C++17. It features an
 
 ## Building
 
-This project uses CMake and requires a C++17-compatible compiler. It builds three executables: `cli`, `server`, and `client`.
+This project uses CMake and requires a C++17-compatible compiler. It builds four executables: `cli`, `server`, `client`, and `benchmark`.
 
 ```bash
 # Configure
@@ -85,9 +85,25 @@ cpp-cache/
 │   ├── CommandParser.cpp
 │   └── Server.cpp
 ├── apps/
+│   ├── benchmark_main.cpp
 │   ├── cli_main.cpp
 │   ├── client_main.cpp
 │   └── server_main.cpp
 ├── data/
 └── build/
 ```
+
+## Benchmark
+
+A benchmark executable is included to measure core cache operations.
+
+```bash
+./build/benchmark.exe
+```
+
+| Operation | Median | Average |
+| --- | --- | --- |
+| SET | 943.78 ns | 947.14 ns |
+| GET | 557.26 ns | 558.28 ns |
+| EXISTS | 501.65 ns | 502.20 ns |
+| DELETE | 700.72 ns | 707.62 ns |
