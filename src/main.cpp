@@ -2,21 +2,21 @@
 #include <string>
 #include "Cache.h"
 #include "CommandParser.h"
-#include "Color.h"
 
 int main() {
     Cache cache(1000);
     CommandParser cmdParse(cache);
     std::string line;
-    std::cout << color::CYAN << "C++ MEMORY CACHE\n";
-    std::cout << "Type HELP to view command usage.\n" << color::RESET << std::endl;
+    std::cout << "C++ MEMORY CACHE\n";
+    std::cout << "Type HELP to view command usage.\n" << std::endl;
     while (true) {
-        std::cout << color::CYAN << "> ";
+        std::cout << "> ";
         if (!(std::getline(std::cin, line)))
             break;
-        if (!cmdParse.process(line))
+        auto res = cmdParse.process(line);
+        if (res.toExit)
             break;
+        std::cout << res.response;
     }
-    std::cout << color::RESET;
     return 0;
 }

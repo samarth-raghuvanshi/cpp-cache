@@ -4,6 +4,11 @@
 #include <string_view>
 #include "Cache.h"
 
+struct CommandResponse {
+    std::string response;
+    bool toExit = false;
+};
+
 class CommandParser {
     public:
         static inline constexpr std::string_view HELP_MESSAGE = 
@@ -24,19 +29,19 @@ class CommandParser {
         "\tEXIT                                     Exit the program\n";
 
         explicit CommandParser(Cache &cache);
-        bool process(const std::string &line);
+        CommandResponse process(const std::string &line);
 
     private:
         Cache &cache;
-        void handleSet(std::stringstream &ss);
-        void handleGet(std::stringstream &ss);
-        void handleExists(std::stringstream &ss);
-        void handleDelete(std::stringstream &ss);
-        void handleResize(std::stringstream &ss);
-        void handleExpire(std::stringstream &ss);
-        void handlePersist(std::stringstream &ss);
-        void handleTTL(std::stringstream &ss);
-        void handleSave(std::stringstream &ss);
-        void handleLoad(std::stringstream &ss);
-        void handleClear(std::stringstream &ss);
+        CommandResponse handleSet(std::stringstream &ss);
+        CommandResponse handleGet(std::stringstream &ss);
+        CommandResponse handleExists(std::stringstream &ss);
+        CommandResponse handleDelete(std::stringstream &ss);
+        CommandResponse handleResize(std::stringstream &ss);
+        CommandResponse handleExpire(std::stringstream &ss);
+        CommandResponse handlePersist(std::stringstream &ss);
+        CommandResponse handleTTL(std::stringstream &ss);
+        CommandResponse handleSave(std::stringstream &ss);
+        CommandResponse handleLoad(std::stringstream &ss);
+        CommandResponse handleClear(std::stringstream &ss);
 };

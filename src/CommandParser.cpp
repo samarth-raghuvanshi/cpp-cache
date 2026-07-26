@@ -1,201 +1,224 @@
 #include "CommandParser.h"
-#include "Color.h"
 #include "CacheSerializer.h"
 #include <iostream>
 #include <iomanip>
 
 CommandParser::CommandParser(Cache &cache) :cache(cache) {}
 
-bool CommandParser::process(const std::string &line) {
+CommandResponse CommandParser::process(const std::string &line) {
     std::stringstream ss(line);
+    std::ostringstream out;
     std::string command;
     if(!(ss >> command))
-        return true;
+        return {};
     if (command == "SET")
-        handleSet(ss);
+        return handleSet(ss);
     else if (command == "GET")
-        handleGet(ss);
+        return handleGet(ss);
     else if (command == "EXISTS")
-        handleExists(ss);
+        return handleExists(ss);
     else if (command == "DELETE")
-        handleDelete(ss);
+        return handleDelete(ss);
     else if (command == "RESIZE")
-        handleResize(ss);
+        return handleResize(ss);
     else if (command == "EXPIRE")
-        handleExpire(ss);
+        return handleExpire(ss);
     else if (command == "PERSIST")
-        handlePersist(ss);
+        return handlePersist(ss);
     else if (command == "TTL")
-        handleTTL(ss);
+        return handleTTL(ss);
     else if (command == "SAVE")
-        handleSave(ss);
+        return handleSave(ss);
     else if (command == "LOAD")
-        handleLoad(ss);
+        return handleLoad(ss);
     else if (command == "CLEAR")
-        handleClear(ss);
+        return handleClear(ss);
     else if (command == "INFO") {
         cache.cleanupExpired();
         size_t entries = cache.getSize();
         size_t cap = cache.getCapacity();
         double usage = (static_cast<double> (entries)/cap)*100;
-        std::cout << color::YELLOW << "\n\tENTRIES: " << entries << "\n\tCAPACITY: " << cap << "\n\tUSAGE: " << std::fixed << std::setprecision(1) << usage << "%\n" << color::RESET << std::endl;
-        std::cout << std::defaultfloat;
+        out <<  "\n\tENTRIES: " << entries << "\n\tCAPACITY: " << cap << "\n\tUSAGE: " << std::fixed << std::setprecision(1) << usage << "%\n" <<  "\n";
+        out << std::defaultfloat;
+        return {out.str()};
     }
     else if (command == "HELP")
-        std::cout << color::YELLOW << HELP_MESSAGE << color::RESET << std::endl;
+        return {std::string(HELP_MESSAGE)};
     else if (command == "EXIT")
-        return false;
+        return {"", true};
     else 
-        std::cout << color::RED << "\t\"" << command << "\" is not a recognised command.\n\tType HELP to view command usage." << color::RESET << std::endl;
-    return true;
+        out <<  "\t\"" << command << "\" is not a recognised command.\n\tType HELP to view command usage." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleSet(std::stringstream &ss) {
+CommandResponse CommandParser::handleSet(std::stringstream &ss) {
     std:: string key, value, command, extra;
+    std::ostringstream out;
     int ttl;
     if ((!(ss >> key >> value))) {
-        std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: SET <key> <value> [TTL <seconds>]" <<  "\n";
+        return {out.str()};
     }
     if (!(ss >> command)) {
         cache.set(key, value);
     }
     else {
         if (command != "TTL") {
-            std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
-            return;
+            out <<   "\tUsage: SET <key> <value> [TTL <seconds>]" <<  "\n";
+            return {out.str()};
         }
         if (!(ss >> ttl) || ttl<=0 || (ss >> extra)) {
-            std::cout << color::RED << "\tUsage: SET <key> <value> [TTL <seconds>]" << color::RESET << std::endl;
-            return;
+            out <<  "\tUsage: SET <key> <value> [TTL <seconds>]" <<  "\n";
+            return {out.str()};
         }
         cache.set(key, value, ttl);
     }
-    std::cout << color::GREEN << "\tStored successfully." << color::RESET << std::endl;
+    out <<  "\tStored successfully." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleGet(std::stringstream &ss) {
+CommandResponse CommandParser::handleGet(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     if ((!(ss >> key)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: GET <key>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: GET <key>" <<  "\n";
+        return {out.str()};
     }
     auto s = cache.get(key);
     if (s.has_value())
-        std::cout << color::GREEN << "\t" << s.value() << color::RESET<< std::endl;
+        out <<  "\t" << s.value() << "\n";
     else
-        std::cout << color::RED << "\tKEY: \""<< key << "\" not found" << color::RESET << std::endl;
+        out <<  "\tKEY: \""<< key << "\" not found" <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleExists(std::stringstream &ss) {
+CommandResponse CommandParser::handleExists(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     if ((!(ss >> key)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: EXISTS <key>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: EXISTS <key>" <<  "\n";
+        return {out.str()};
     }
     if (cache.exists(key))
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" exists" << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" exists" <<  "\n";
     else
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" does not exist" << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" does not exist" <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleDelete(std::stringstream &ss) {
+CommandResponse CommandParser::handleDelete(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     if ((!(ss >> key)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: DELETE <key>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: DELETE <key>" <<  "\n";
+        return {out.str()};
     }
     if(cache.eraseKey(key))
-        std::cout << color::GREEN << "\tDeleted successfully." << color::RESET << std::endl;
+        out <<  "\tDeleted successfully." <<  "\n";
     else
-        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" not found." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleResize(std::stringstream &ss) {
+CommandResponse CommandParser::handleResize(std::stringstream &ss) {
     long long newCapacity;
     std::string extra;
+    std::ostringstream out;
     if ((!(ss >> newCapacity)) || (ss >> extra) ) {
-        std::cout << color::RED << "\tUsage: RESIZE <integer_value>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: RESIZE <integer_value>" <<  "\n";
+        return {out.str()};
     }
     if (newCapacity <= 0) {
-        std::cout << color::RED << "\tINVALID: Capacity should be atleast 1" << color::RESET << std::endl;
-        return;
+        out <<  "\tINVALID: Capacity should be atleast 1" <<  "\n";
+        return {out.str()};
     }
     int changed = cache.resize(static_cast<size_t>(newCapacity));
-    std::cout << color::GREEN << "\tCapacity changed to " << newCapacity << ".\n\tEvicted " << changed << " entries." << color::RESET << std::endl;
+    out <<  "\tCapacity changed to " << newCapacity << ".\n\tEvicted " << changed << " entries." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleExpire(std::stringstream &ss) {
+CommandResponse CommandParser::handleExpire(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     int ttl;
     if ((!(ss >> key >> ttl)) || ttl<=0 || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: EXPIRE <key> <seconds>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: EXPIRE <key> <seconds>" <<  "\n";
+        return {out.str()};
     }
     if(cache.setExpiry(key, ttl))
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" set to expire in " << ttl << " seconds." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" set to expire in " << ttl << " seconds." <<  "\n";
     else
-        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" not found." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handlePersist(std::stringstream &ss) {
+CommandResponse CommandParser::handlePersist(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     if ((!(ss >> key)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: PERSIST <key>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: PERSIST <key>" <<  "\n";
+        return {out.str()};
     }
     if(cache.persist(key))
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" expiry removed." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" expiry removed." <<  "\n";
     else
-        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" not found." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleTTL(std::stringstream &ss) {
+CommandResponse CommandParser::handleTTL(std::stringstream &ss) {
     std::string key, extra;
+    std::ostringstream out;
     if ((!(ss >> key)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: TTL <key>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: TTL <key>" <<  "\n";
+        return {out.str()};
     }
     int ttl = cache.getTTL(key);
     if (ttl == -2)
-        std::cout << color::RED << "\tKEY: \"" << key << "\" not found." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" not found." <<  "\n";
     else if (ttl == -1)
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" has no expiry." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" has no expiry." <<  "\n";
     else
-        std::cout << color::GREEN << "\tKEY: \"" << key << "\" expires in " << ttl << " seconds." << color::RESET << std::endl;
+        out <<  "\tKEY: \"" << key << "\" expires in " << ttl << " seconds." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleSave(std::stringstream &ss) {
+CommandResponse CommandParser::handleSave(std::stringstream &ss) {
     std::string filename, extra;
+    std::ostringstream out;
     if ((!(ss >> filename)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: SAVE <filename>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: SAVE <filename>" <<  "\n";
+        return {out.str()};
     }
     if (CacheSerializer::save(cache, filename)) 
-        std::cout << color::GREEN << "\tCache stored to ../data/" << filename << color::RESET << std::endl;
+        out <<  "\tCache stored to ../data/" << filename <<  "\n";
     else 
-        std::cout << color::RED << "\tERROR: Could not open " << filename << "." << color::RESET << std::endl;
+        out <<  "\tERROR: Could not open " << filename << "." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleLoad(std::stringstream &ss) {
+CommandResponse CommandParser::handleLoad(std::stringstream &ss) {
     std::string filename, extra;
+    std::ostringstream out;
     if ((!(ss >> filename)) || (ss >> extra)) {
-        std::cout << color::RED << "\tUsage: LOAD <filename>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: LOAD <filename>" <<  "\n";
+        return {out.str()};
     }
     if (CacheSerializer::load(cache, filename)) 
-        std::cout << color::GREEN << "\tCache loaded from ../data/" << filename << color::RESET << std::endl;
+        out <<  "\tCache loaded from ../data/" << filename <<  "\n";
     else 
-        std::cout << color::RED << "\tERROR: Could not open " << filename << "." << color::RESET << std::endl;
+        out <<  "\tERROR: Could not open " << filename << "." <<  "\n";
+    return {out.str()};
 }
 
-void CommandParser::handleClear(std::stringstream &ss) {
+CommandResponse CommandParser::handleClear(std::stringstream &ss) {
     std::string extra;
+    std::ostringstream out;
     if (ss >> extra) {
-        std::cout << color::RED << "\tUsage: LOAD <filename>" << color::RESET << std::endl;
-        return;
+        out <<  "\tUsage: CLEAR" <<  "\n";
+        return {out.str()};
     }
     cache.clear();
-        std::cout << color::GREEN << "\tCache cleared." << color::RESET << std::endl;
+    out <<  "\tCache cleared." <<  "\n";
+    return {out.str()};
 }
